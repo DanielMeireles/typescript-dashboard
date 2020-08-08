@@ -4,27 +4,15 @@ import ChartistGraph from "react-chartist";
 // @material-ui/core
 import withStyles from "@material-ui/core/styles/withStyles";
 // @material-ui/icons
-import Warning from "@material-ui/icons/Warning";
 import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import AccessTime from "@material-ui/icons/AccessTime";
-import BugReport from "@material-ui/icons/BugReport";
-import Code from "@material-ui/icons/Code";
-import Cloud from "@material-ui/icons/Cloud";
-import CheckIcon from '@material-ui/icons/Check';
 // core components
 import GridItem from "../../components/Grid/GridItem";
 import GridContainer from "../../components/Grid/GridContainer";
-import Table from "../../components/Table/Table";
-import Tasks from "../../components/Tasks/Tasks";
-import CustomTabs from "../../components/CustomTabs/CustomTabs";
-import Danger from "../../components/Typography/Danger";
 import Card from "../../components/Card/Card";
-import Button from '../../components/CustomButtons/Button';
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
 import CardFooter from "../../components/Card/CardFooter";
-
-import { bugs, website, server } from "../../variables/general";
 
 import {
   dailySalesChart,
@@ -33,8 +21,6 @@ import {
 } from "../../variables/charts";
 
 import dashboardStyle from "../../assets/jss/material-dashboard-react/views/dashboardStyle";
-import CustomInput from "../../components/CustomInput/CustomInput";
-import Success from "../../components/Typography/Success";
 
 import CardComponent from '../../components/CardComponent';
 import TableComponent from '../../components/TableComponent';
@@ -65,21 +51,22 @@ export interface CovidCountry {
   updated_at: Date;
 }
 
+interface CovidState {
+  uid: number,
+  uf: string,
+  state: string,
+  cases: number,
+  deaths: number,
+  suspects: number,
+  refuses: number,
+  broadcast?: boolean,
+  comments?: string,
+  datetime: Date
+}
+
 const Dashboard: React.FC<DashboardProps> = (props) => {
-  const { 
-    cardCategory,
-    cardTitle, 
-    stats,
-    cardTitleWhite,
-    cardCategoryWhite,
-    messages
-  } = props.classes;
 
-  const classes = props.classes;
-
-  const [creatingMessage, setCreatingMessage] = useState(false);
-  const [messageFailed, setMessageFailed] = useState(true);
-  const [messageSuccess, setMessageSuccess] = useState(true);
+  const { classes  }= props;
 
   const [covidBrazil, setCovidBrazil] = useState<CovidCountry>({
     country: "Brazil",
@@ -91,8 +78,10 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   });
 
   const [covidCountries, setCovidCountries] = useState<CovidCountry[]>([]);
-
   const [covidCountriesArray, setCovidCountriesArray] = useState<(string | number)[][]>([]);
+
+  const [covidStates, setCovidStates] = useState<CovidState[]>([]);
+  const [covidStatesArray, setCovidStatesArray] = useState<(string | number)[][]>([]);
 
   function getDataFromApi() {
     api.get('brazil').then(response => {
@@ -100,6 +89,9 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     });
     api.get('countries').then(response => {
       setCovidCountries(response.data.data);
+    });
+    api.get('').then(response => {
+      setCovidStates(response.data.data);
     });
   }
 
@@ -120,6 +112,21 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     });
     setCovidCountriesArray(aux);
   }, [covidCountries]);
+
+  useEffect(() => {
+    let aux: (string | number)[][] = [];
+    
+    covidStates.map((covidStates: CovidState) => {
+      aux.push([
+        covidStates.uf,
+        covidStates.suspects,
+        covidStates.refuses,
+        covidStates.cases,
+        covidStates.deaths
+      ]);
+    });
+    setCovidStatesArray(aux);
+  }, [covidStates]);
 
   return (
     <div>
@@ -159,12 +166,13 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             classes={classes}
             color="danger"
             icon="error"
-            category="Mortos"
+            category="Mortes"
             number={covidBrazil.deaths}
             updatedAt={covidBrazil.updated_at}
           />
         </GridItem>
       </GridContainer>
+
       {/*
       <GridContainer>
         <GridItem xs={12} sm={12} md={4}>
@@ -177,16 +185,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
               />
             </CardHeader>
             <CardBody>
-              <h4 className={cardTitle}>Daily Sales</h4>
-              <p className={cardCategory}>
-                <span className={successText}>
-                  <ArrowUpward className={upArrowCardCategory} /> 55%
+              <h4 className={classes.cardTitle}>Daily Sales</h4>
+              <p className={classes.cardCategory}>
+                <span className={classes.successText}>
+                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
                 </span>{" "}
                 increase in today sales.
               </p>
             </CardBody>
             <CardFooter chart={true}>
-              <div className={stats}>
+              <div className={classes.stats}>
                 <AccessTime /> updated 4 minutes ago
               </div>
             </CardFooter>
@@ -202,13 +210,13 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
               />
             </CardHeader>
             <CardBody>
-              <h4 className={cardTitle}>Email Subscriptions</h4>
-              <p className={cardCategory}>
+              <h4 className={classes.cardTitle}>Email Subscriptions</h4>
+              <p className={classes.cardCategory}>
                 Last Campaign Performance
               </p>
             </CardBody>
             <CardFooter chart={true}>
-              <div className={stats}>
+              <div className={classes.stats}>
                 <AccessTime /> campaign sent 2 days ago
               </div>
             </CardFooter>
@@ -224,13 +232,13 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
               />
             </CardHeader>
             <CardBody>
-              <h4 className={cardTitle}>Completed Tasks</h4>
-              <p className={cardCategory}>
+              <h4 className={classes.cardTitle}>Completed Tasks</h4>
+              <p className={classes.cardCategory}>
                 Last Campaign Performance
               </p>
             </CardBody>
             <CardFooter chart={true}>
-              <div className={stats}>
+              <div className={classes.stats}>
                 <AccessTime /> campaign sent 2 days ago
               </div>
             </CardFooter>
@@ -245,127 +253,20 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             classes={classes}
             color="danger"
             title="Lista de casos por país"
-            tableHead={["País", "Recuperados", "Confirmados", "Casos", "Mortos"]}
+            tableHead={["País", "Recuperados", "Confirmados", "Casos", "Mortes"]}
             tableData={covidCountriesArray}
             updatedAt={covidBrazil.updated_at}
           />
         </GridItem>
-
-
         <GridItem xs={12} sm={12} md={6}>
-          <Card>
-            <CardHeader color="warning">
-              <h4 className={cardTitleWhite}>Employees Stats</h4>
-              <p className={cardCategoryWhite}>
-                New employees on 15th September, 2016
-              </p>
-            </CardHeader>
-            <CardBody>
-              <Table
-                tableHeaderColor="warning"
-                tableHead={["ID", "Name", "Salary", "Country"]}
-                tableData={[
-                  ["1", "Dakota Rice", "$36,738", "Niger"],
-                  ["2", "Minerva Hooper", "$23,789", "Curaçao"],
-                  ["3", "Sage Rodriguez", "$56,142", "Netherlands"],
-                  ["4", "Philip Chaney", "$38,735", "Korea, South"],
-                ]}
-              />
-            </CardBody>
-          </Card>
-        </GridItem>
-      </GridContainer>
-
-
-
-
-
-      <GridContainer>
-        <GridItem xs={12}>
-        <Card>
-            <CardHeader color="success">
-              <div className={messages}>
-                <h4 className={cardTitleWhite}>Mensagens Positivas</h4>
-                {!creatingMessage && (
-                  <Button 
-                    color="transparent" 
-                    variant="outlined" 
-                    onClick={() => setCreatingMessage(true)}
-                  >
-                    Enviar Mensagem
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardBody>
-              {!creatingMessage 
-                ? <React.Fragment>
-                    <h5 className={cardTitle}>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac est pulvinar, tempor turpis id, 
-                      vehicula magna.
-                    </h5>
-                    <p className={cardCategory}>
-                      Jane Doe
-                    </p>
-                  </React.Fragment> 
-                : <React.Fragment>
-                    <GridContainer>
-                      <GridItem xs={12}>
-                        <CustomInput
-                          labelText="Nome"
-                          id="name"
-                          color="success"
-                          formControlProps={{
-                            fullWidth: true
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12}>
-                      <CustomInput
-                        labelText="Mensagem"
-                        id="message"
-                        formControlProps={{
-                          fullWidth: true
-                        }}
-                        inputProps={{
-                          multiline: true,
-                          rows: 5
-                        }}
-                      />
-                      </GridItem>
-                    </GridContainer>
-                  </React.Fragment>
-              }
-            </CardBody>
-            {creatingMessage && (
-              <CardFooter>
-                <Button color="danger" onClick={() => setCreatingMessage(false)} >Cancelar</Button>
-                <Button color="success">Enviar Mensagem</Button>
-              </CardFooter>
-            )}
-            {messageFailed && (
-              <CardFooter>
-                <div className={stats}>
-                  <Danger>
-                    <Warning />
-                    Falha ao enviar mensagem
-                  </Danger>
-                </div>
-              </CardFooter>
-            )}
-            {messageSuccess && (
-              <CardFooter>
-                <div className={stats}>
-                  <Success>
-                    <CheckIcon />
-                    Mensagem enviada com sucesso
-                  </Success>
-                </div>
-              </CardFooter>
-            )}
-          </Card>
+          <TableComponent
+            classes={classes}
+            color="danger"
+            title="Lista de casos por estado"
+            tableHead={["Estado", "Suspeitos", "Descartados", "Casos", "Mortes"]}
+            tableData={covidStatesArray}
+            updatedAt={covidBrazil.updated_at}
+          />
         </GridItem>
       </GridContainer>
     </div>
