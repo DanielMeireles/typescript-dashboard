@@ -78,10 +78,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   });
 
   const [covidCountries, setCovidCountries] = useState<CovidCountry[]>([]);
-  const [covidCountriesArray, setCovidCountriesArray] = useState<(string | number)[][]>([]);
 
   const [covidStates, setCovidStates] = useState<CovidState[]>([]);
-  const [covidStatesArray, setCovidStatesArray] = useState<(string | number)[][]>([]);
 
   function getDataFromApi() {
     api.get('brazil').then(response => {
@@ -98,35 +96,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   useEffect(() => {
     getDataFromApi();
   }, []);
-
-  useEffect(() => {
-    let aux: (string | number)[][] = [];
-    
-    covidCountries.map((covidCountries: CovidCountry) => {
-      aux.push([
-        covidCountries.country, 
-        covidCountries.recovered, 
-        covidCountries.confirmed, 
-        covidCountries.cases, 
-        covidCountries.deaths])
-    });
-    setCovidCountriesArray(aux);
-  }, [covidCountries]);
-
-  useEffect(() => {
-    let aux: (string | number)[][] = [];
-    
-    covidStates.map((covidStates: CovidState) => {
-      aux.push([
-        covidStates.uf,
-        covidStates.suspects,
-        covidStates.refuses,
-        covidStates.cases,
-        covidStates.deaths
-      ]);
-    });
-    setCovidStatesArray(aux);
-  }, [covidStates]);
 
   return (
     <div>
@@ -254,7 +223,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             color="danger"
             title="Lista de casos por país"
             tableHead={["País", "Recuperados", "Confirmados", "Casos", "Mortes"]}
-            tableData={covidCountriesArray}
+            tableData={
+              covidCountries.map((covidCountries: CovidCountry) => {
+                return [
+                  covidCountries.country, 
+                  covidCountries.recovered, 
+                  covidCountries.confirmed, 
+                  covidCountries.cases, 
+                  covidCountries.deaths]
+              })
+            }
             updatedAt={covidBrazil.updated_at}
           />
         </GridItem>
@@ -264,7 +242,17 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             color="danger"
             title="Lista de casos por estado"
             tableHead={["Estado", "Suspeitos", "Descartados", "Casos", "Mortes"]}
-            tableData={covidStatesArray}
+            tableData={
+              covidStates.map((covidStates: CovidState) => {
+                return [
+                  covidStates.uf,
+                  covidStates.suspects,
+                  covidStates.refuses,
+                  covidStates.cases,
+                  covidStates.deaths
+                ];
+              })
+            }
             updatedAt={covidBrazil.updated_at}
           />
         </GridItem>
