@@ -37,6 +37,7 @@ import CustomInput from "../../components/CustomInput/CustomInput";
 import Success from "../../components/Typography/Success";
 
 import CardComponent from '../../components/CardComponent';
+import TableComponent from '../../components/TableComponent';
 
 import api from '../../services/api';
 
@@ -69,8 +70,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     cardCategory,
     cardTitle, 
     stats,
-    successText,
-    upArrowCardCategory,
     cardTitleWhite,
     cardCategoryWhite,
     messages
@@ -78,7 +77,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
   const classes = props.classes;
 
-  const [value, setValue] = useState(0);
   const [creatingMessage, setCreatingMessage] = useState(false);
   const [messageFailed, setMessageFailed] = useState(true);
   const [messageSuccess, setMessageSuccess] = useState(true);
@@ -92,10 +90,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     updated_at: new Date()
   });
 
+  const [covidCountries, setCovidCountries] = useState<CovidCountry[]>([]);
+
+  const [covidCountriesArray, setCovidCountriesArray] = useState<(string | number)[][]>([]);
+
   function getDataFromApi() {
     api.get('brazil').then(response => {
       setCovidBrazil(response.data.data);
-      console.log(covidBrazil)
+    });
+    api.get('countries').then(response => {
+      setCovidCountries(response.data.data);
     });
   }
 
@@ -103,13 +107,19 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     getDataFromApi();
   }, []);
 
-  function handleChange(value: number) {
-    setValue(value);
-  };
-
-  function handleChangeIndex(index: number) {
-    setValue(index);
-  };
+  useEffect(() => {
+    let aux: (string | number)[][] = [];
+    
+    covidCountries.map((covidCountries: CovidCountry) => {
+      aux.push([
+        covidCountries.country, 
+        covidCountries.recovered, 
+        covidCountries.confirmed, 
+        covidCountries.cases, 
+        covidCountries.deaths])
+    });
+    setCovidCountriesArray(aux);
+  }, [covidCountries]);
 
   return (
     <div>
@@ -155,7 +165,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
           />
         </GridItem>
       </GridContainer>
-
+      {/*
       <GridContainer>
         <GridItem xs={12} sm={12} md={4}>
           <Card chart={true}>
@@ -227,48 +237,21 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
           </Card>
         </GridItem>
       </GridContainer>
+      */}
+
       <GridContainer>
         <GridItem xs={12} sm={12} md={6}>
-          <CustomTabs
-            title="Tasks:"
-            headerColor="primary"
-            tabs={[
-              {
-                tabName: "Bugs",
-                tabIcon: BugReport,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[0, 3]}
-                    tasksIndexes={[0, 1, 2, 3]}
-                    tasks={bugs}
-                  />
-                ),
-              },
-              {
-                tabName: "Website",
-                tabIcon: Code,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[0]}
-                    tasksIndexes={[0, 1]}
-                    tasks={website}
-                  />
-                ),
-              },
-              {
-                tabName: "Server",
-                tabIcon: Cloud,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[1]}
-                    tasksIndexes={[0, 1, 2]}
-                    tasks={server}
-                  />
-                ),
-              },
-            ]}
+          <TableComponent
+            classes={classes}
+            color="danger"
+            title="Lista de casos por país"
+            tableHead={["País", "Recuperados", "Confirmados", "Casos", "Mortos"]}
+            tableData={covidCountriesArray}
+            updatedAt={covidBrazil.updated_at}
           />
         </GridItem>
+
+
         <GridItem xs={12} sm={12} md={6}>
           <Card>
             <CardHeader color="warning">
@@ -292,6 +275,11 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
           </Card>
         </GridItem>
       </GridContainer>
+
+
+
+
+
       <GridContainer>
         <GridItem xs={12}>
         <Card>
